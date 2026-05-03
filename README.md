@@ -33,6 +33,20 @@ To ensure academic efficiency and transparency, our team adopted the following t
 *   **Rare Minerals**: `#A4431F` (Ship and Special Bricks)
 *   **Common Debris**: `#7A89A0` (Standard Bricks)
 
+# Nebulosa Smasher WireFrame
+
+<img width="772" height="571" alt="Captura de pantalla 2026-05-03 a la(s) 12 13 24" src="https://github.com/user-attachments/assets/0dd5228f-a0cc-4f09-80cb-8f895a91299e" />
+
+---
+
+<img width="777" height="578" alt="Captura de pantalla 2026-05-03 a la(s) 12 13 58" src="https://github.com/user-attachments/assets/ad676a15-bf34-4d4c-9401-1fa925c53338" />
+
+---
+
+<img width="770" height="572" alt="Captura de pantalla 2026-05-03 a la(s) 12 14 26" src="https://github.com/user-attachments/assets/e1dcd710-51e8-48eb-889d-5211f5dee964" />
+
+---
+
 ---
 
 ## Data Structure (Preview)
