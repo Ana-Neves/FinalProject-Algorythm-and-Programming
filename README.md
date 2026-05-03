@@ -63,10 +63,13 @@ The game utilizes C structures to manage the global state:
 
 ## Contributors
 
-*   **Ana Caroline Rodrigues Neves** — *Developer & Designer*
-    *   [GitHub](https://github.com/Ana-Neves)
-*   **[PARTNER NAME]** — *Developer*
-    *   [GitHub](link)
+![Ana](https://avatars.githubusercontent.com/u/97240075?v=4)
+**Ana**
+Desenvolvedora Fullstack - Colaboradora
+
+- GitHub: [Ana-Neves](https://github.com/Ana-Neves)
+- LinkedIn: [Ana](https://www.linkedin.com/in/ana-caroline-neves-fullstack/)
+
 
 ---
 
