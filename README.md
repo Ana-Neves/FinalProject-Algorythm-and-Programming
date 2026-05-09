@@ -69,7 +69,7 @@ brew install raylib
    
 ## 👥 Authors
  * **Ana Caroline Neves** - *Computer Science Undergraduate at UFRGS*
- * **Helena Kambundi** - *[Collaborator's Title/Info]*
+ * **Helena Kambundi** - *Automation and Control Engineer at UFRGS*
    
 ## 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
