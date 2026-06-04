@@ -13,4 +13,7 @@ void desenharMapa(EstadoJogo jogo);
 // Desenha o menu principal e as telas de vitória/derrota
 void desenharTelasSistema(EstadoJogo jogo);
 
+// Desenha os atores principais (plataforma e bola) durante o gameplay
+void desenharJogo(EstadoJogo jogo);
+
 #endif
