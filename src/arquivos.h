@@ -6,6 +6,9 @@
 // Vai ler o arquivo fase_X.txt e preencher a matriz do jogo
 void carregarMapa(int fase, EstadoJogo *jogo);
 
+void salvarJogoBinario(EstadoJogo jogo);
+bool carregarJogoBinario(EstadoJogo *jogo);
+
 // Salva o estado atual em um arquivo binário
 void salvarProgresso(EstadoJogo jogo);
 
