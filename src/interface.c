@@ -1,48 +1,51 @@
 #include "interface.h"
 
-void desenharJogo(EstadoJogo jogo)
-{
-    // Definindo as cores exatas do wireframe
-    Color corFundo = {10, 10, 26, 255};       // Azul muito escuro (#0A0A1A)
-    Color corPlataforma = {255, 184, 0, 255}; // Laranja/Mostarda (#FFB800)
-    Color corBola = {0, 255, 255, 255};       // Ciano (#00FFFF)
+void desenharJogo(EstadoJogo jogo) {
+    // Desenha Plataforma
+    DrawRectangleRec(jogo.jogador.rec, ORANGE);
 
-    // Limpar a tela com a cor do fundo do espaço
-    ClearBackground(corFundo);
-
-    // Desenhar a plataforma
-    DrawRectangleRec(jogo.jogador.rec, corPlataforma);
-
-    // Desenhar a bolinha
-    // A função DrawCircleV recebe um Vector2 (posição X e Y) e o raio (float)
+    // Desenha Bola Principal
+    Color corBola = jogo.bolaFogoAtiva ? RED : SKYBLUE; // Fica vermelha se o fogo estiver ativo
+    if (jogo.bolaFogoAtiva) {
+        DrawCircleV(jogo.bolaPrincipal.posicao, jogo.bolaPrincipal.raio + 3, ORANGE); // Efeito de brilho do fogo
+    }
     DrawCircleV(jogo.bolaPrincipal.posicao, jogo.bolaPrincipal.raio, corBola);
+
+    // Desenha Bolas Extras
+    for (int i = 0; i < 2; i++) {
+        if (jogo.bolasExtras[i].ativa) {
+            DrawCircleV(jogo.bolasExtras[i].posicao, jogo.bolasExtras[i].raio, SKYBLUE);
+        }
+    }
+
+    // Desenha Power-ups Caindo
+    for (int p = 0; p < 20; p++) {
+        if (jogo.powerUpsCaindo[p].ativo) {
+            Color corP;
+            char letra[2] = " ";
+            if (jogo.powerUpsCaindo[p].tipo == 1) { corP = BLUE; letra[0] = 'E'; } // E = Expansão
+            else if (jogo.powerUpsCaindo[p].tipo == 2) { corP = RED; letra[0] = 'F'; } // F = Fogo
+            else if (jogo.powerUpsCaindo[p].tipo == 3) { corP = GREEN; letra[0] = '+'; } // + = Bolas Extras
+
+            DrawRectangleRec(jogo.powerUpsCaindo[p].rec, corP);
+            DrawText(letra, jogo.powerUpsCaindo[p].rec.x + 4, jogo.powerUpsCaindo[p].rec.y + 2, 12, WHITE);
+        }
+    }
 }
 
 void desenharMapa(EstadoJogo jogo) {
-    // Percorre toda a matriz
     for (int i = 0; i < 15; i++) {
         for (int j = 0; j < 25; j++) {
-            
-            // Só desenha se o tijolo estiver ativo
             if (jogo.mapa[i][j].ativo) {
                 Color corTijolo;
-                
-                // Define a cor baseada na resistência
-                switch (jogo.mapa[i][j].resistencia) {
-                    case -1: corTijolo = GRAY; break;      // 'X' - Indestrutível
-                    case 1:  corTijolo = GREEN; break;     // '1' - 1 batida
-                    case 2:  corTijolo = YELLOW; break;    // '2' - 2 batidas
-                    case 3:  corTijolo = ORANGE; break;    // '3' - 3 batidas
-                    case 4:  corTijolo = RED; break;       // '4' - 4 batidas
-                    default: corTijolo = BLANK; break;     // Caso de erro
-                }
-                
-                // Desenha o retângulo do tijolo
+                if (jogo.mapa[i][j].resistencia == -1) corTijolo = DARKGRAY;
+                else if (jogo.mapa[i][j].resistencia == 1) corTijolo = GREEN;
+                else if (jogo.mapa[i][j].resistencia == 2) corTijolo = YELLOW;
+                else if (jogo.mapa[i][j].resistencia == 3) corTijolo = ORANGE;
+                else if (jogo.mapa[i][j].resistencia == 4) corTijolo = RED;
+
                 DrawRectangleRec(jogo.mapa[i][j].rec, corTijolo);
-                
-                // Desenha uma linha preta de 1 pixel em volta 
-                // de cada tijolo para eles não virarem um borrão de cor só!
-                DrawRectangleLinesEx(jogo.mapa[i][j].rec, 1.0f, BLACK);
+                DrawRectangleLinesEx(jogo.mapa[i][j].rec, 1, BLACK);
             }
         }
     }
