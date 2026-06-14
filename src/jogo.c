@@ -1,95 +1,145 @@
 #include "jogo.h"
-
+#include "raylib.h"
 
 void atualizarMovimentacao(EstadoJogo *jogo) {
-    // MOVIMENTO DA PLATAFORMA
-    // Lê as setas do teclado (ou A e D) e move a plataforma
-    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-        jogo->jogador.rec.x += jogo->jogador.velocidade;
-    }
-    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-        jogo->jogador.rec.x -= jogo->jogador.velocidade;
-    }
+    // Movimentação da Plataforma
+    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) jogo->jogador.rec.x -= jogo->jogador.velocidade;
+    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) jogo->jogador.rec.x += jogo->jogador.velocidade;
 
-    // Trava de Segurança: Impede a plataforma de fugir da tela (800 de largura)
-    if (jogo->jogador.rec.x < 0) {
-        jogo->jogador.rec.x = 0; // Bateu na parede esquerda
-    }
-    if (jogo->jogador.rec.x + jogo->jogador.rec.width > 800) {
-        jogo->jogador.rec.x = 800 - jogo->jogador.rec.width; // Bateu na direita
-    }
+    if (jogo->jogador.rec.x <= 0) jogo->jogador.rec.x = 0;
+    if (jogo->jogador.rec.x + jogo->jogador.rec.width >= 800) jogo->jogador.rec.x = 800 - jogo->jogador.rec.width;
 
-    // MOVIMENTO DA BOLA
-    // A cada frame, a bola anda um pouquinho na direção da sua velocidade
+    // Movimentação das Bolas
     jogo->bolaPrincipal.posicao.x += jogo->bolaPrincipal.velocidade.x;
     jogo->bolaPrincipal.posicao.y += jogo->bolaPrincipal.velocidade.y;
+
+    for (int i = 0; i < 2; i++) {
+        if (jogo->bolasExtras[i].ativa) {
+            jogo->bolasExtras[i].posicao.x += jogo->bolasExtras[i].velocidade.x;
+            jogo->bolasExtras[i].posicao.y += jogo->bolasExtras[i].velocidade.y;
+        }
+    }
+
+    // Queda dos Power-Ups
+    for (int p = 0; p < 20; p++) {
+        if (jogo->powerUpsCaindo[p].ativo) {
+            jogo->powerUpsCaindo[p].rec.y += 3.0f; // Velocidade de queda
+            if (jogo->powerUpsCaindo[p].rec.y > 600) jogo->powerUpsCaindo[p].ativo = false;
+        }
+    }
+
+    // Temporizador de Power-Ups (Bola de Fogo e Expansão)
+    if (jogo->tempoPowerUp > 0) {
+        jogo->tempoPowerUp -= GetFrameTime(); // Subtrai o tempo real em segundos
+        if (jogo->tempoPowerUp <= 0) {
+            jogo->jogador.rec.width = 100; // Plataforma volta ao normal
+            jogo->bolaFogoAtiva = false;   // Bolinha perde o fogo
+        }
+    }
 }
 
-
-
-void processarColisoes(EstadoJogo *jogo) {
-    // COLISÃO COM AS PAREDES LATERAIS 
-    // Se a bola bater no X 0 (esquerda) ou X 800 (direita), inverte a velocidade X
-    if (jogo->bolaPrincipal.posicao.x - jogo->bolaPrincipal.raio <= 0 || 
-        jogo->bolaPrincipal.posicao.x + jogo->bolaPrincipal.raio >= 800) {
-        jogo->bolaPrincipal.velocidade.x *= -1; 
-    }
-
-    // COLISÃO COM O TETO
-    // Se a bola bater no Y 0 (teto), inverte a velocidade Y para descer
-    if (jogo->bolaPrincipal.posicao.y - jogo->bolaPrincipal.raio <= 0) {
-        jogo->bolaPrincipal.velocidade.y *= -1; 
-    }
-
-    // COLISÃO COM O CHÃO  
-    // No jogo final, cair no chão (Y 600) perde vida. 
-    // Por enquanto, vamos fazer ela quicar para podermos testar o motor à vontade!
-   // Como deve ficar:
-if (jogo->bolaPrincipal.posicao.y <= 0) { // Bate apenas no teto!
-    jogo->bolaPrincipal.velocidade.y *= -1;
-}
-
-    // COLISÃO COM A PLATAFORMA
-    // CheckCollisionCircleRec checa automaticamente se o círculo entrou no retângulo
-    if (CheckCollisionCircleRec(jogo->bolaPrincipal.posicao, jogo->bolaPrincipal.raio, jogo->jogador.rec)) {
-        // Inverte a velocidade para a bola subir
-        jogo->bolaPrincipal.velocidade.y *= -1; 
-        
-        // Coloca a bola milimetricamente acima da plataforma
-        jogo->bolaPrincipal.posicao.y = jogo->jogador.rec.y - jogo->bolaPrincipal.raio;
-    }
-
-    // COLISÃO COM OS TIJOLOS
-    bool colisaoDetectada = false; // Flag para não bater em dois blocos de uma vez
-    
+// Função auxiliar para calcular o dano em tijolos
+void verificarColisaoBolaTijolos(Bola *bola, EstadoJogo *jogo) {
+    bool colisaoDetectada = false; 
     for (int i = 0; i < 15; i++) {
         for (int j = 0; j < 25; j++) {
-            
-            // Só checa colisão se o bloco ainda existir na tela
             if (jogo->mapa[i][j].ativo) {
-                
-                // A mágica da Raylib verificando o impacto
-                if (CheckCollisionCircleRec(jogo->bolaPrincipal.posicao, jogo->bolaPrincipal.raio, jogo->mapa[i][j].rec)) {
+                if (CheckCollisionCircleRec(bola->posicao, bola->raio, jogo->mapa[i][j].rec)) {
                     
-                    // 1. Faz a bolinha quicar (inverte o Y)
-                    jogo->bolaPrincipal.velocidade.y *= -1;
-                    
-                    // 2. Lógica de dano (se não for bloco indestrutível '-1')
-                    if (jogo->mapa[i][j].resistencia > 0) {
-                        jogo->mapa[i][j].resistencia--; // Perde 1 de "vida"
-                        
-                        // Se a vida zerar, o bloco some da tela
-                        if (jogo->mapa[i][j].resistencia == 0) {
-                            jogo->mapa[i][j].ativo = false;
-                            jogo->pontuacao += 10; // Soma 10 pontos!
-                        }
+                    // Se for bola de fogo, atravessa o bloco sem quicar (exceto os indestrutíveis)
+                    if (!jogo->bolaFogoAtiva || jogo->mapa[i][j].resistencia == -1) {
+                        bola->velocidade.y *= -1; 
                     }
-                    
+
+                    if (jogo->mapa[i][j].resistencia > 0) {
+                        // Bola de fogo destrói na hora, se não, tira 1 ponto
+                        if (jogo->bolaFogoAtiva) jogo->mapa[i][j].resistencia = 0;
+                        else jogo->mapa[i][j].resistencia--; 
+                        
+                        // Quebrou o tijolo!
+                        if (jogo->mapa[i][j].resistencia == 0) {
+                            jogo->mapa[i][j].ativo = false; 
+                            jogo->pontuacao += 10;          
+
+                            // Libera o item para cair
+                            if (jogo->mapa[i][j].tipoPowerUp > 0) {
+                                for (int p = 0; p < 20; p++) {
+                                    if (!jogo->powerUpsCaindo[p].ativo) {
+                                        jogo->powerUpsCaindo[p].ativo = true;
+                                        jogo->powerUpsCaindo[p].tipo = jogo->mapa[i][j].tipoPowerUp;
+                                        // Centraliza o item no tijolo destruído
+                                        jogo->powerUpsCaindo[p].rec = (Rectangle){ jogo->mapa[i][j].rec.x + 8, jogo->mapa[i][j].rec.y, 16, 16 };
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } 
                     colisaoDetectada = true;
-                    break; // Sai do loop da coluna
+                    break; 
                 }
             }
         }
-        if (colisaoDetectada) break; // Sai do loop da linha
+        if (colisaoDetectada) break; 
+    }
+}
+
+void processarColisoes(EstadoJogo *jogo) {
+    // Colisão Bola Principal com Paredes
+    if (jogo->bolaPrincipal.posicao.x >= 800 || jogo->bolaPrincipal.posicao.x <= 0) jogo->bolaPrincipal.velocidade.x *= -1;
+    if (jogo->bolaPrincipal.posicao.y <= 0) jogo->bolaPrincipal.velocidade.y *= -1;
+
+    // Colisão Bola Principal com Plataforma
+    if (CheckCollisionCircleRec(jogo->bolaPrincipal.posicao, jogo->bolaPrincipal.raio, jogo->jogador.rec)) {
+        jogo->bolaPrincipal.velocidade.y *= -1;
+        jogo->bolaPrincipal.posicao.y = jogo->jogador.rec.y - jogo->bolaPrincipal.raio;
+    }
+
+    // Colisões das Bolas Extras
+    for (int i = 0; i < 2; i++) {
+        if (jogo->bolasExtras[i].ativa) {
+            if (jogo->bolasExtras[i].posicao.x >= 800 || jogo->bolasExtras[i].posicao.x <= 0) jogo->bolasExtras[i].velocidade.x *= -1;
+            if (jogo->bolasExtras[i].posicao.y <= 0) jogo->bolasExtras[i].velocidade.y *= -1;
+
+            if (CheckCollisionCircleRec(jogo->bolasExtras[i].posicao, jogo->bolasExtras[i].raio, jogo->jogador.rec)) {
+                jogo->bolasExtras[i].velocidade.y *= -1;
+                jogo->bolasExtras[i].posicao.y = jogo->jogador.rec.y - jogo->bolasExtras[i].raio;
+            }
+        }
+    }
+
+    // Quebrar tijolos (chama para a principal e paras as extras)
+    verificarColisaoBolaTijolos(&jogo->bolaPrincipal, jogo);
+    for (int i = 0; i < 2; i++) {
+        if (jogo->bolasExtras[i].ativa) verificarColisaoBolaTijolos(&jogo->bolasExtras[i], jogo);
+    }
+
+    // Colisão Jogador Pegando Power-Up
+    for (int p = 0; p < 20; p++) {
+        if (jogo->powerUpsCaindo[p].ativo) {
+            if (CheckCollisionRecs(jogo->jogador.rec, jogo->powerUpsCaindo[p].rec)) {
+                jogo->powerUpsCaindo[p].ativo = false; // "Comeu" o item
+                jogo->pontuacao += 20; // Ponto extra pela coleta
+
+                // APLICA OS SUPERPODERES
+                int tipo = jogo->powerUpsCaindo[p].tipo;
+                if (tipo == 1) { // Expansão
+                    jogo->jogador.rec.width = 200;
+                    jogo->jogador.rec.x -= 50; 
+                    jogo->tempoPowerUp = 10.0f; // Dura 10 segundos
+                } else if (tipo == 2) { // Bola de Fogo
+                    jogo->bolaFogoAtiva = true;
+                    jogo->tempoPowerUp = 10.0f; // Dura 10 segundos
+                } else if (tipo == 3) { // Bolas Extras
+                    for (int b = 0; b < 2; b++) {
+                        jogo->bolasExtras[b].ativa = true;
+                        jogo->bolasExtras[b].posicao = jogo->bolaPrincipal.posicao; // Nascem de onde a original está
+                        jogo->bolasExtras[b].raio = 8.0f;
+                        // Uma vai pra esquerda, a outra pra direita
+                        jogo->bolasExtras[b].velocidade = (Vector2){ (b==0)? 4.0f : -4.0f, -5.0f }; 
+                    }
+                }
+            }
+        }
     }
 }

@@ -3,7 +3,6 @@
 
 #include "raylib.h"
 
-// Estrutura para a Bola
 typedef struct {
     Vector2 posicao;
     Vector2 velocidade;
@@ -11,33 +10,43 @@ typedef struct {
     bool ativa;
 } Bola;
 
-// Estrutura para a Plataforma
 typedef struct {
     Rectangle rec;
     float velocidade;
     bool larguraExpandida;
 } Plataforma;
 
-// Estrutura para os Tijolos
 typedef struct {
     Rectangle rec;
-    int resistencia; // 0 para vazio, 1-4 para destrutíveis, -1 para indestrutíveis ('X')
+    int resistencia; 
     bool ativo;
-    int tipoPowerUp; // 0: nenhum, 1: expansão, 2: bola fogo, 3: extra
+    int tipoPowerUp; 
 } Tijolo;
 
-// Estrutura Principal do Estado do Jogo
+typedef struct {
+    Rectangle rec;
+    int tipo; 
+    bool ativo;
+} PowerUp;
+
 typedef struct {
     Tijolo mapa[15][25];
     Bola bolaPrincipal;
-    Bola bolasExtras[2]; // Para o power-up de bolas extras
+    Bola bolasExtras[2]; 
     Plataforma jogador;
+    PowerUp powerUpsCaindo[20]; 
     int pontuacao;
     int vidas;
     int faseAtual;
-    int estadoTela; // 0: Menu, 1: Jogando, 2: Pausado, 3: Vitória, 4: Derrota
+    int estadoTela; 
     bool bolaFogoAtiva;
-    float tempoPowerUp;
+    float tempoPowerUp; 
 } EstadoJogo;
+
+
+typedef struct {
+    char nome[4]; // 3 letras + terminador de string
+    int pontuacao;
+} RegistroRanking;
 
 #endif
