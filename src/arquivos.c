@@ -2,6 +2,8 @@
 #include <stdio.h> 
 #include <stdbool.h> 
 
+/* Função refatorada com auxílio do Gemini para leitura dinâmica de múltiplos txt. 
+   Ver apêndice A do relatório. */
 void carregarMapa(int fase, EstadoJogo *jogo) {
     char caminhoArquivo[50];
     sprintf(caminhoArquivo, "assets/fase_%d.txt", fase); 

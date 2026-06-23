@@ -139,6 +139,8 @@ int main(void) {
                 }
                 break;
 
+/* Função desenvolvida com auxílio do Gemini. 
+   Ver apêndice A do relatório (Sistema de Transição e Entrada de Texto). */
             case 4: { // TELA DE DIGITAR O NOME
                 int tecla = GetCharPressed();
                 while (tecla > 0) {
